@@ -1,0 +1,21 @@
+## Vold 2.0 Generic fstab
+## - San Mehat (san@android.com)
+## 
+
+#######################
+## Regular device mount
+##
+## Format: dev_mount <label> <mount_point> <part> <sysfs_path1...> 
+## label        - Label for the volume
+## mount_point  - Where the volume will be mounted
+## part         - Partition # (1 based), or 'auto' for first usable partition.
+## <sysfs_path> - List of sysfs paths to source devices
+######################
+
+dev_mount nand /mnt/sdcard auto /devices/virtual/block/ndda
+dev_mount sdcard /mnt/sdcard/tflash auto /devices/platform/tcc-sdhc0.0/mmc_host/mmc0
+dev_mount sata_sda /mnt/sdcard/sata_sda1 auto /devices/platform/ahci/host0
+dev_mount sata_sdb /mnt/sdcard/sata_sdb1 auto /devices/platform/ahci/host1
+dev_mount scsi_sda /mnt/sdcard/scsi_sda1 auto /devices/platform/dwc_otg.0
+dev_mount scsi_sdb /mnt/sdcard/scsi_sdb1 auto /devices/platform/tcc-ohci.0
+

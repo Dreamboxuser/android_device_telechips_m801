@@ -1,0 +1,146 @@
+on boot
+    insmod /lib/modules/tcc88xx_nand.ko
+    insmod /system/lib/modules/viqe.ko
+#    insmod /system/lib/modules/vpu_manager.ko
+#    insmod /system/lib/modules/vpu_decoder.ko
+#    insmod /system/lib/modules/vpu_decoder_ext.ko
+#    insmod /system/lib/modules/vpu_encoder.ko    
+    insmod /lib/modules/tcc_sdio.ko
+    insmod /lib/modules/unifi_sdio.ko
+    insmod /lib/modules/ufsd.ko
+    insmod /system/lib/modules/ump.ko ump_memory_size=0x3000000
+    insmod /system/lib/modules/mali.ko mali_memory_size=0x12C00000
+    insmod /lib/modules/ehci-hcd.ko
+    insmod /lib/modules/ohci-hcd.ko
+
+# change permissions for alsa nodes
+    chmod 0666 /dev/timer
+    chmod 0666 /dev/mem
+    chmod 0666 /dev/intr
+    chmod 0666 /dev/graphics/fb0
+
+# change permissions for gps uart
+#    setprop ro.kernel.android.gps tcc-uart5
+#		chmod 0666 /dev/tcc-uart5
+#		chmod 0666 /dev/gps_gpio
+
+    #mount vfat /dev/block/ndda1 /nand noatime
+    chmod 666 /dev/block/ndda
+
+    # Collect ramconsole data
+    copy /proc/last_kmsg /data/dontpanic/last_kmsg
+    chown root log /data/dontpanic/last_kmsg
+    chmod 0640 /data/dontpanic/last_kmsg
+
+# unmap left alt to avoid console switch
+    setkey 0x0 0x38 0x0
+# dream reset SEND+MENU+END
+    setkey 0x0 0xe7 0x706
+    setkey 0x0 0x8b 0x707
+
+    setkey 0x40 0xe7 0x706
+    setkey 0x40 0x8b 0x707
+
+    setkey 0x80 0xe7 0x706
+    setkey 0x80 0x8b 0x707
+
+    setkey 0xc0 0xe7 0x706
+    setkey 0xc0 0x8b 0x707
+    setkey 0xc0 0x6b 0x20c
+
+# Atheros +++
+    setprop wifi.supp_delay_para 800
+    setprop wifi.supplicant_scan_interval 10 
+    setprop wifi.wapi.supported true
+    setprop wifi.eng.enabled false
+
+    # Create the directories used by the Wireless subsystem
+    mkdir /data/misc/wifi/sockets 0770 wifi wifi
+    mkdir /data/misc/wifi/wpa_supplicant 0770 wifi wifi
+    mkdir /data/misc/dhcp 0770 dhcp dhcp
+    chown dhcp dhcp /data/misc/dhcp
+
+service wpa_supplicant /system/bin/wpa_supplicant -Dwext -iwlan0 -c/data/misc/wifi/wpa_supplicant.conf
+	disabled
+	oneshot
+
+service hostapd /system/bin/hostapd_wps /data/misc/wifi/hostapd.conf
+    socket hostapd_wlap0 dgram 660 root wifi
+    user root
+    group wifi
+    oneshot
+    disabled
+
+service dhcpcd /system/bin/dhcpcd -ABKL
+	disabled
+	oneshot
+
+service wlan_tool /system/bin/wlan_tool
+	user root
+	group root
+	disabled
+	oneshot
+
+# AR6002
+service abtfilt /system/bin/abtfilt -c -d -z -n
+	disabled
+	oneshot
+
+#Special for the ugly AR6003 code
+service abtfilt1 /system/bin/abtfilt -a -d -v -z -s
+    disabled
+    oneshot
+
+# Atheros ---
+
+
+#compass/accelerometer daemon
+service akmd8975 /system/bin/akmd8975
+    user compass
+    group compass misc input
+
+# for CSR Module
+#service bccmd /system/bin/bccmd -t bcsp -d /dev/tcc-uart1 psload /system/key_921600.psr
+service bccmd /system/bin/bccmd -t bcsp -d /dev/tcc-uart1 psload /system/key_3000000.psr
+	disabled
+	oneshot
+
+# for BRCM Module
+#service bcmtool /system/xbin/bcmtool /dev/tcc-uart1 -FILE=/system/BCM4325D0.hcd -ADDR=/system/sample.bdaddr -BAUD=921600
+#service bcmtool /system/xbin/bcmtool /dev/tcc-uart1 -FILE=/system/BCM4325D0.hcd -ADDR=/system/sample.bdaddr -BAUD=3000000 -SCO -SETSCO=0,1,0,1,1,0,0,3,3,0 -LP
+#	disabled
+#	oneshot
+
+#service hciattach /system/bin/hciattach -n -s 3000000 /dev/tcc-uart1 any 3000000 flow
+#service hciattach /system/bin/hciattach -n -s 921600 /dev/tcc-uart1 bcsp 921600 
+service hciattach /system/bin/hciattach -n -s 3000000 /dev/tcc-uart1 bcsp 3000000
+#	user bluetooth
+#	group bluetooth net_bt_admin
+	disabled
+#	oneshot
+
+# rtc
+chmod 666 /dev/rtc0
+
+service dhcp-service /system/bin/netcfg wlan0 dhcp
+        oneshot
+
+on property:dev.bootcomplete=1
+        stop dhcp-service
+        start dhcp-service
+	write /dev/clockctrl 1
+
+# Define TCC media parser sequential mode
+	setprop tcc.parser.sequential 1
+
+# Define TCC internal subtitle
+	setprop tcc.internal.subtitle	1
+
+# Define TCC video vsync mode
+	setprop tcc.video.vsync.support         0
+# Define TCC video deinteralce mode, this is a sub item of vsync mode, so you have to enable vsync mode first to use deinterlace mode.
+	setprop tcc.video.deinterlace.support   0
+
+service tcc_dxb_service /system/bin/tcc_dxb_service
+    user system
+
