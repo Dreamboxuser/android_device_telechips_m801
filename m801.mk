@@ -35,8 +35,8 @@ PRODUCT_COPY_FILES += \
         device/telechips/m801/etc/vold.fstab:system/etc/vold.fstab \
         device/telechips/m801/key_921600.psr:system/key_921600.psr \
         device/telechips/m801/key_3000000.psr:system/key_3000000.psr \
-        device/telechips/m801/ts.conf:system/ts.conf
-#       device/telechips/m801/etc/media_profiles.xml:system/etc/media_profiles.xml \
+        device/telechips/m801/ts.conf:system/ts.conf \
+#       device/telechips/m801/etc/media_profiles.xml:system/etc/media_profiles.xml
 
 # apns config file
 PRODUCT_COPY_FILES += \
@@ -94,7 +94,7 @@ PRODUCT_COPY_FILES += \
     device/telechips/m801/modules/ohci-hcd.ko:root/lib/modules/ohci-hcd.ko \
     device/telechips/m801/modules/tcc88xx_nand.ko:root/lib/modules/tcc88xx_nand.ko \
     device/telechips/m801/modules/tcc88xx_nand.ko:recovery/root/lib/modules/tcc88xx_nand.ko \
-    device/telechips/m801/modules/ufsd.ko:root/lib/modules/ufsd.ko \
+    device/telechips/m801/modules/ufsd.ko:root/lib/modules/ufsd.ko
 
 PRODUCT_COPY_FILES += \
     device/telechips/m801/modules/ar6000.ko:system/lib/modules/ar6000.ko \
